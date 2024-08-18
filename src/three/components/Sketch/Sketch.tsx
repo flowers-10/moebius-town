@@ -58,6 +58,7 @@ const Sketch = () => {
   });
 
   useEffect(() => {
+    directionalLightRef.current!.target = groundRef.current!;
     useLoadedStore.setState({ ready: true });
   }, []);
 
@@ -79,14 +80,14 @@ const Sketch = () => {
     useControls("dirLightColor", {
       dircolor: "#fff",
       dirIntenisty: {
-        value: 7.5,
+        value: 12,
         min: 0,
         max: 50,
         step: 0.01,
       },
       ambientcolor: "#fff",
       ambientIntenisty: {
-        value: 0.2,
+        value: 1.1,
         min: 0,
         max: 10,
         step: 0.01,
@@ -150,6 +151,21 @@ const Sketch = () => {
     },
   });
 
+  const { mod, tickness } = useControls("shadow", {
+    mod: {
+      value: 10,
+      min: 0,
+      max: 50,
+      step: 0.01,
+    },
+    tickness: {
+      value: 1.5,
+      min: 0,
+      max: 10,
+      step: 0.01,
+    },
+  });
+
   return (
     <>
       <OrbitControls domElement={controlDom} minDistance={1} maxDistance={15} />
@@ -163,14 +179,14 @@ const Sketch = () => {
         color={dircolor}
         shadow-mapSize={[1024, 1024]}
         shadow-camera-near={1}
-        shadow-camera-far={20}
-        shadow-camera-top={5}
-        shadow-camera-right={5}
-        shadow-camera-bottom={-5}
-        shadow-camera-left={-5}
+        shadow-camera-far={50}
+        shadow-camera-top={10}
+        shadow-camera-right={10}
+        shadow-camera-bottom={-10}
+        shadow-camera-left={-10}
       />
-      <BakeShadows />
-      <SoftShadows />
+      {/* <BakeShadows />
+      <SoftShadows /> */}
       <mesh castShadow receiveShadow position={[-1, 2, 1]}>
         <sphereGeometry args={[1, 32, 32]} />
         <meshStandardMaterial color="orange" />
@@ -205,6 +221,8 @@ const Sketch = () => {
           normalRenderTarget={normalRendertarget}
           frequency={frequency}
           amplitude={amplitude}
+          mod={mod}
+          tickness={tickness}
         />
         <GTToneMap {...gtProps} />
         <SMAA preset={preset} key={generateUUID()} />

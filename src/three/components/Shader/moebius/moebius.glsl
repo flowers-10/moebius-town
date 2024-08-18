@@ -6,6 +6,8 @@ uniform float cameraFar;
 uniform vec2 uResolution;
 uniform float uFrequency;
 uniform float uAmplitude;
+uniform float uMod;
+uniform float uTickness;
 
 const mat3 Sx = mat3(-1, -2, -1, 0, 0, 0, 1, 2, 1);
 const mat3 Sy = mat3(-1, 0, 1, -2, 0, 2, -1, 0, 1);
@@ -82,13 +84,18 @@ float hash(vec2 p) {
 
 void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
 
+  float depth = readDepth(uDepth, uv);
+
+  vec3 normal = texture2D(uNormal, uv).rgb;
+
   vec2 texel = vec2(1.0 / uResolution.x, 1.0 / uResolution.y);
 
-  float outlineThickness = 2.0;
+  float outlineThickness = uTickness;
 
   vec4 outlineColor = vec4(0.0, 0.0, 0.0, 1.0);
 
-  // vec4 color = texture2D(inputBuffer, uv);
+  vec4 diffuse = texture2D(inputBuffer, uv);
+
   vec4 color = inputColor;
 
   // vec2 displacement = vec2((hash(gl_FragCoord.xy) * sin(gl_FragCoord.y * uFrequency)), (hash(gl_FragCoord.xy) * cos(gl_FragCoord.x * uFrequency))) * uAmplitude / resolution.xy;
@@ -99,11 +106,32 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   float gradientNormal = getgradientNormal(uNormal, uv + displacement, texel, outlineThickness);
 
   float outline = gradientDepth * 30. + gradientNormal * 2.;
-  outline = smoothstep(0.0, 1.0, outline);
+
+  // outline = smoothstep(0.0, 1.0, outline);
+
+  float diffuseluma = luminance(diffuse.rgb);
+
+  float modVal = uMod;
+
+  if(diffuseluma <= 0.25 && depth <= 0.99) {
+    if(mod((uv.y + displacement.y) * uResolution.y, modVal) < outlineThickness) {
+      color = outlineColor;
+    };
+  }
+  if(diffuseluma <= 0.45 && depth <= 0.99) {
+    if(mod((uv.x + displacement.x) * uResolution.x, modVal) < outlineThickness) {
+      color = outlineColor;
+    };
+
+  }
+  if(diffuseluma <= 0.5 && depth <= 0.99) {
+    if(mod((uv.x + displacement.x) * uResolution.y + (uv.y + displacement.y) * uResolution.x, modVal) <= outlineThickness) {
+      color = outlineColor;
+    };
+  }
+
   color = mix(color, outlineColor, outline);
 
-  float depth = readDepth(uDepth, uv);
-  vec3 normal = texture2D(uNormal, uv).rgb;
   outputColor = color;
   outputColor = vec4(vec3(color), 1.);
 }

@@ -18,6 +18,8 @@ interface IProps {
   noiseTex?: Texture;
   frequency?: number;
   amplitude?: number;
+  mod?: number;
+  tickness?: number;
 }
 
 class MoebiusEffect extends Effect {
@@ -32,6 +34,8 @@ class MoebiusEffect extends Effect {
         ["uFrequency", new Uniform(args.frequency)],
         ["uAmplitude", new Uniform(args.amplitude)],
         ["uNoiseTex", new Uniform(args.noiseTex)],
+        ["uMod", new Uniform(args.mod || 0)],
+        ["uTickness", new Uniform(args.tickness || 0)],
       ]),
     });
     this.depthRenderTarget = args.depthRenderTarget;
