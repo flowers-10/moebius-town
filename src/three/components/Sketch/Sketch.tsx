@@ -23,7 +23,12 @@ import {
 import { Moebius } from "../Effect/Moebius";
 import { useFrame, useThree } from "@react-three/fiber";
 import GTToneMap from "../Effect/GTToneMap";
-import { BlendFunction, EdgeDetectionMode, SMAAPreset } from "postprocessing";
+import {
+  BlendFunction,
+  EdgeDetectionMode,
+  PredicationMode,
+  SMAAPreset,
+} from "postprocessing";
 import { generateUUID } from "three/src/math/MathUtils.js";
 
 const Sketch = () => {

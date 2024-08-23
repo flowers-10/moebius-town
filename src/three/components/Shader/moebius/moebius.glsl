@@ -12,10 +12,13 @@ uniform float uTickness;
 const mat3 Sx = mat3(-1, -2, -1, 0, 0, 0, 1, 2, 1);
 const mat3 Sy = mat3(-1, 0, 1, -2, 0, 2, -1, 0, 1);
 
-float readDepth(sampler2D depthTexture, vec2 coord) {
-  float fragCoordZ = texture2D(depthTexture, coord).x;
-  float viewZ = perspectiveDepthToViewZ(fragCoordZ, cameraNear, cameraFar);
-  return viewZToOrthographicDepth(viewZ, cameraNear, cameraFar);
+float Linear01Depth(sampler2D depthTexture, vec2 coord) {
+  float depth = texture2D(depthTexture, coord).x;
+  float x = 1. - cameraFar / cameraNear;
+  float y = cameraFar / cameraNear;
+  float z = x / cameraFar;
+  float w = y / cameraFar;
+  return 1.0 / (x * depth + y);
 }
 
 float luminance(vec3 color) {
@@ -40,17 +43,17 @@ float getgradientValue(float value00, float value01, float value02, float value1
 }
 
 float getgradientDepth(sampler2D tex, vec2 uv, vec2 texel, float tickness) {
-  float depth00 = readDepth(tex, uv + tickness * texel * vec2(-1, 1));
-  float depth01 = readDepth(tex, uv + tickness * texel * vec2(-1, 0));
-  float depth02 = readDepth(tex, uv + tickness * texel * vec2(-1, -1));
+  float depth00 = Linear01Depth(tex, uv + tickness * texel * vec2(-1, 1));
+  float depth01 = Linear01Depth(tex, uv + tickness * texel * vec2(-1, 0));
+  float depth02 = Linear01Depth(tex, uv + tickness * texel * vec2(-1, -1));
 
-  float depth10 = readDepth(tex, uv + tickness * texel * vec2(0, -1));
-  float depth11 = readDepth(tex, uv + tickness * texel * vec2(0, 0));
-  float depth12 = readDepth(tex, uv + tickness * texel * vec2(0, 1));
+  float depth10 = Linear01Depth(tex, uv + tickness * texel * vec2(0, -1));
+  float depth11 = Linear01Depth(tex, uv + tickness * texel * vec2(0, 0));
+  float depth12 = Linear01Depth(tex, uv + tickness * texel * vec2(0, 1));
 
-  float depth20 = readDepth(tex, uv + tickness * texel * vec2(1, -1));
-  float depth21 = readDepth(tex, uv + tickness * texel * vec2(1, 0));
-  float depth22 = readDepth(tex, uv + tickness * texel * vec2(1, 1));
+  float depth20 = Linear01Depth(tex, uv + tickness * texel * vec2(1, -1));
+  float depth21 = Linear01Depth(tex, uv + tickness * texel * vec2(1, 0));
+  float depth22 = Linear01Depth(tex, uv + tickness * texel * vec2(1, 1));
 
   float gradientDepth = getgradientValue(depth00, depth01, depth02, depth10, depth11, depth12, depth20, depth21, depth22);
 
@@ -84,7 +87,7 @@ float hash(vec2 p) {
 
 void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
 
-  float depth = readDepth(uDepth, uv);
+  float depth = Linear01Depth(uDepth, uv);
 
   vec3 normal = texture2D(uNormal, uv).rgb;
 
@@ -109,7 +112,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 
   // outline = smoothstep(0.0, 1.0, outline);
 
-  float diffuseluma = luminance(diffuse.rgb);
+  float diffuseluma = luminance(color.rgb);
 
   float modVal = uMod;
 
@@ -133,5 +136,5 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   color = mix(color, outlineColor, outline);
 
   outputColor = color;
-  outputColor = vec4(vec3(color), 1.);
+  // outputColor = vec4(vec3(depth), 1.);
 }
