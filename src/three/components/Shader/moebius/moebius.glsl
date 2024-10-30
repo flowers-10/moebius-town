@@ -101,8 +101,8 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 
   vec4 color = inputColor;
 
-  // vec2 displacement = vec2((hash(gl_FragCoord.xy) * sin(gl_FragCoord.y * uFrequency)), (hash(gl_FragCoord.xy) * cos(gl_FragCoord.x * uFrequency))) * uAmplitude / resolution.xy;
-  vec2 displacement = vec2(sin(gl_FragCoord.y * uFrequency), cos(gl_FragCoord.x * uFrequency)) * uAmplitude / uResolution.xy;
+  vec2 displacement = vec2((hash(gl_FragCoord.xy) * sin(gl_FragCoord.y * uFrequency)), (hash(gl_FragCoord.xy) * cos(gl_FragCoord.x * uFrequency))) * uAmplitude / resolution.xy;
+  // vec2 displacement = vec2(sin(gl_FragCoord.y * uFrequency), cos(gl_FragCoord.x * uFrequency)) * uAmplitude / uResolution.xy;
 
   float gradientDepth = getgradientDepth(uDepth, uv + displacement, texel, outlineThickness);
 
